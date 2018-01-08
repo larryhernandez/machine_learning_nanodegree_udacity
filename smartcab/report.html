@@ -16155,7 +16155,7 @@ When the light is green, the waypoint is 'left', and input['oncoming'] is 'strai
 
 
 </code></pre>
-<p>[2] The agent visited all of the 96 possible states. It learned the correct policy many times. This is indicated by the A ratings that it achieved in the 100 test trials, and it's also reflected in the safety and efficiency rates it earned during training. However, for some states it did not learn the optimal policy. Examples of correct and incorrect policies are provided in the next two responses.</p>
+<p>[2] The agent visited all of the 96 possible states. It learned the correct action many times, but not every time. So, the agent learned a sub-optimal policy. This is indicated by the A ratings that it achieved in the 100 test trials, and it's also reflected in the safety and efficiency rates it earned during training. However, for some states it did not learn the optimal policy. Examples of correct and incorrect policies are provided in the next two responses.</p>
 <p>[3] Here are three examples when the agent learned the optimal policy:</p>
 <p>a. When the light was red, the waypoint was right, traffic to the left was going 'forward', and oncoming traffic was 'None', the agent learned to remain idle / 'None'. The highest valued action was 'None' with a value of 0.36. All other actions had negative values, which is definitely correct. The agent should be penalized for doing anything but remaining idle in this state.</p>
 
@@ -16180,7 +16180,10 @@ When the light is green, the waypoint is 'left', and input['oncoming'] is 'strai
 <p>[4] Here is an example when the agent did not learn the optimal policy. The way point was to the left, the light was red, oncoming traffic was intending to move 'forward', and traffic on the left was heading 'right'. The agent learned to move 'right' when the optimal policy is 'None'. This is a sub-optimal policy.</p>
 
 <pre><code>   State  --&gt; (('way_point', 'left'), ('traffic_light', 'red'), ('oncomingdir', 'forward'), ('leftdir', 'right'))
-   Actions/Values --&gt; {forward : 0.00, right : 1.19, None : 0.00, left : -8.96}</code></pre>
+   Actions/Values --&gt; {forward : 0.00, right : 1.19, None : 0.00, left : -8.96}
+
+</code></pre>
+<p>It's possible that the agent learned to turn right because this action is valid under this state. Turning right is legal and safe even though it is sub-optimal. Consequently, the agent receives a small positive-valued reward whenever it makes valid moves such as this one, even if those are sub-optimal moves for the task.</p>
 
 </div>
 </div>
