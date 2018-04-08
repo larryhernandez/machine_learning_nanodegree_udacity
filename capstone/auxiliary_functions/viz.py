@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 # This code borrowed and adapted from Deep Learning course Jupyter notebook:
 # 
@@ -17,10 +18,17 @@ def count_target_categories(targets, targetCategories):
 
 def create_bar_chart(targets, targetCategories, titleString = 'Class Distribution'):
     '''
+    Generate bar chart of the distribution of the target classes
+    
+    INPUTS:
+        targets             Mx1 or 1xM array of values
+        targetCategories    Nx1 or 1xN array of unique values containing all values 
+                            of input 'targets'
+        titleString         optional string serving as the title of visualization
     '''
     counts, categoryIndices = count_target_categories(targets, targetCategories)
     objects = ('1','2','3','4','5','6','7','8','9','10', '11', '12')
-    totalCounts = np.sum(num_images)
+    totalCounts = np.sum(counts)
     plt.bar(categoryIndices, counts / totalCounts, align = 'center')
     plt.title(titleString)
     plt.ylabel('Proportion of Images')
