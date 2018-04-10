@@ -20,7 +20,7 @@ from keras import optimizers
 
 
 
-def create_benchmark_CNN(drop_out = [[0.1], [0.2]], neurons = 500):
+def create_benchmark_CNN(plantsImageSize = 224, drop_outA = 0.1, drop_outB = 0.1, neurons = 500):
     '''
     Simple Sequential CNN that will be used as a benchmark
     '''
@@ -34,15 +34,13 @@ def create_benchmark_CNN(drop_out = [[0.1], [0.2]], neurons = 500):
 
     benchmark.add(Conv2D(filters=32, kernel_size=2, strides = 1, padding='same', activation = 'relu'))
     benchmark.add(Conv2D(filters=32, kernel_size=2, strides = 1, padding='same', activation = 'relu'))
-    benchmark.add(Dropout(drop_out[0][0]))
-#    benchmark.add(Dropout(0.10))
-    benchmark.add(MaxPooling2D(pool_size=2))
+    benchmark.add(Dropout(drop_outA))
+    benchmark.add(MaxPooling2D(pool_size=(2,2)))
 
     benchmark.add(Conv2D(filters=64, kernel_size=2, strides = 1, padding='same', activation = 'relu'))
     benchmark.add(Conv2D(filters=64, kernel_size=2, strides = 1, padding='same', activation = 'relu'))
-#    benchmark.add(Dropout(0.20))
-    benchmark.add(Dropout(drop_out[1][0]))
-    benchmark.add(MaxPooling2D(pool_size=2))
+    benchmark.add(Dropout(drop_outB))
+    benchmark.add(MaxPooling2D(pool_size=(2,2)))
 
     benchmark.add(Flatten())
     benchmark.add(Dense(neurons, activation='relu'))
