@@ -100,9 +100,7 @@ def generate_bottleneck_features(model, x_train, y_train, x_valid, y_valid, imag
     
     generator = datagen_train.flow(x_train, 
                                    y_train,
-                                   target_size = (imageSize, imageSize),
                                    batch_size = batchSize,
-                                   class_mode = None,
                                    shuffle = False,
                                    seed = SEED)
     
@@ -115,9 +113,7 @@ def generate_bottleneck_features(model, x_train, y_train, x_valid, y_valid, imag
     
     generator = datagen_valid.flow(x_valid, 
                                    y_valid,
-                                   target_size = (imageSize, imageSize),
                                    batch_size = batchSize,
-                                   class_mode = None,
                                    shuffle = False,
                                    seed = SEED)
     
@@ -151,8 +147,9 @@ def fully_connected_toplayer(InputShape, learningRate = 0.001, beta1 = 0.9, beta
     fullyConnected.add(Dense(12, activation='softmax'))
     
     # Compile the top model
-    adam = optimizers.Adam(lr = learningRate, beta_1 = beta1, beta_2 = beta2, epsilon=None, decay=0.0, amsgrad=False)
-    fullyConnected.compile(loss='categorical_crossentropy', optimizer = adam, metrics=['accuracy'])
+    #adam = optimizers.Adam(lr = learningRate, beta_1 = beta1, beta_2 = beta2, epsilon=None, decay=0.0, amsgrad=False)
+    rmsprop = keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
+    fullyConnected.compile(loss='categorical_crossentropy', optimizer = rmsprop, metrics=['accuracy'])
     return fullyConnected
 
 
