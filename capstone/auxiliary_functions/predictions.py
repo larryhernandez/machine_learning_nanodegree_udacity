@@ -5,8 +5,7 @@ def predict_with_tensors(thisModel, test_tensors):
     ''' 
     thisModel makes predictions with tensors, and converts the one-hot-encoded predictions to integer labels
     '''
-#    return [np.argmax(thisModel.predict(np.expand_dims(feature, axis=0))) for feature in testBottleneckFeatures]
-    return [thisModel.predict(np.expand_dims(feature, axis=0)) for tensor in test_tensors]
+    return [thisModel.predict(np.expand_dims(tensor, axis=0)) for tensor in test_tensors]
 
 
 def create_submission(output_path, test_preds, CLASSES):
