@@ -17,7 +17,7 @@ from keras.applications.inception_v3 import InceptionV3
 from keras.applications.inception_v3 import preprocess_input
 
 from keras import optimizers
-
+from keras.optimizers import RMSprop
 
 
 def create_benchmark_CNN(plantsImageSize = 224, drop_outA = 0.1, drop_outB = 0.1, neurons = 500):
@@ -68,109 +68,111 @@ def load_pretrain_CNN(modelName = 'VGG19', imageSize = 224, layers_to_keep = -1)
         model = InceptionV3(include_top=False, weights='imagenet', input_shape = (imageSize,imageSize,3))
     else:
         raise ValueError('Invalid model input')  
-    
+        
     # Remove layers
     if (layers_to_keep != -1):
         num_layers_to_remove = len(model.layers) - layers_to_keep
         for j in range(0,num_layers_to_remove):
             model.layers.pop()
+            #copiedModel.outputs = [copiedModel.layers[-1].output]
+            #copiedModel.output_layers = [copiedModel.layers[-1]] 
+            #copiedModel.layers[-1].outbound_nodes = []
     return model
 
 
-def generate_bottleneck_features(model, x_train, y_train, x_valid, y_valid, imageSize = 224, batchSize = 32):
-    ''' Largely borrowed and adapted from 
-        https://gist.github.com/fchollet/f35fbc80e066a49d65f1688a7e99f069
-    '''
-    SEED = 0
-    ROTATION = 180      # randomly rotate images up to 180 degrees
-    WIDTH_SHIFT = 0.1   # randomly shift images horizontally (10% of total width)
-    HEIGHT_SHIFT = 0.1  # randomly shift images vertically (10% of total height)
-    SHEAR_RANGE = 0.2   # randomly shear images counter-clockwise in radians (0.2 rads ~ 11 degrees)
+
+def generate_bottleneck(thisModel, data_files, inputImageSize = 224):
+    ''' Passes data through a pre-trained model in order to generate bottleneck features '''
     
-    numTrainSamples = len(y_train)
-    numValidSamples = len(y_valid)
-
-    # Image Augmentation for train set
-    datagen_train = ImageDataGenerator(rotation_range = ROTATION,
-                                       width_shift_range = WIDTH_SHIFT,  
-                                       height_shift_range = HEIGHT_SHIFT,  
-                                       shear_range = SHEAR_RANGE,
-                                       fill_mode = 'nearest',
-                                       horizontal_flip = True) # randomly flip images horizontally
-    
-    generator = datagen_train.flow(x_train, 
-                                   y_train,
-                                   batch_size = batchSize,
-                                   shuffle = False,
-                                   seed = SEED)
-    
-    bottleneck_features_train = model.predict_generator(generator, numTrainSamples // batchSize)
-    
-#    np.save(open('bottleneck_features_train.npy', 'w'), bottleneck_features_train)
-
-    # Image Augmentation for Validation Set
-    datagen_valid = ImageDataGenerator(rescale = 1.0 / imageSize)
-    
-    generator = datagen_valid.flow(x_valid, 
-                                   y_valid,
-                                   batch_size = batchSize,
-                                   shuffle = False,
-                                   seed = SEED)
-    
-    bottleneck_features_validation = model.predict_generator(generator, numValidSamples // batchSize)
-
-#    np.save(open('bottleneck_features_validation.npy', 'w'), bottleneck_features_validation)
-    return bottleneck_features_train, bottleneck_features_validation
+    # Data
+    preprocessedData = preprocess_input(paths_to_tensor(data_files, inputImageSize))
+    bottleneck_features = thisModel.predict(preprocessedData)
+    return bottleneck_features, preprocessedData
 
 
-#def generate_bottleneck(thisModel, inputImageSize = 224, train_files, valid_files, test_files):
-#    ''' '''    
-    # Training Data
-#    train_input = preprocess_input(paths_to_tensor(train_files, inputImageSize))
-#    bottleneck_train = thisModel.predict(train_input)
-   
-    # Validation Data
-#    valid_input = preprocess_input(paths_to_tensor(valid_files, inputImageSize))
-#    bottleneck_valid = thisModel.predict(valid_input)
-
-    # Test Data
-#    test_input = preprocess_input(paths_to_tensor(train_files, inputImageSize))
-#    bottleneck_test = thisModel.predict(test_input)
-    
-#    return bottleneck_train, bottleneck_valid, bottleneck_test
-
-
-def fully_connected_toplayer(InputShape, learningRate = 0.001, beta1 = 0.9, beta2 = 0.999):
-    ''' '''
-    fullyConnected = Sequential()
-    fullyConnected.add(GlobalAveragePooling2D(input_shape = InputShape))
-    fullyConnected.add(Dense(12, activation='softmax'))
-    
-    # Compile the top model
-    #adam = optimizers.Adam(lr = learningRate, beta_1 = beta1, beta_2 = beta2, epsilon=None, decay=0.0, amsgrad=False)
-    rmsprop = keras.optimizers.RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
-    fullyConnected.compile(loss='categorical_crossentropy', optimizer = rmsprop, metrics=['accuracy'])
-    return fullyConnected
-
-
-
-def fully_connected_fine_tuning(InputShape):
-    ''' '''
-    fullyConnected = Sequential()
-    fullyConnected.add(GlobalAveragePooling2D(input_shape = InputShape))
-    fullyConnected.add(Dense(12, activation='softmax'))    
-    return fullyConnected
-
-
-
-def create_top_model(InputShape, numDenseNeurons = 256, dropout_rate = 0.5):
+def create_top_model(inputData, learningRate = 0.001, numDenseNeurons = 256, dropout_rate = 0.2):
     ''' 
+    A small, densely connected neural network to place on top of another CNN being used for transfer learning.
     Borrowed from:
-    https://blog.keras.io/building-powerful-image-classification-models-using-very-little-data.html
+        https://blog.keras.io/building-powerful-image-classification-models-using-very-little-data.html
     '''
     top_model = Sequential()
-    top_model.add(Flatten(input_shape = InputShape))
+    top_model.add(Flatten(input_shape = inputData.shape[1:]))
     top_model.add(Dense(numDenseNeurons, activation='relu'))
     top_model.add(Dropout(dropout_rate))
-    top_model.add(Dense(12, activation='sigmoid'))
+    top_model.add(Dense(12, activation='softmax'))
+    rmsprop = RMSprop(lr=learningRate, rho=0.9, epsilon=1e-08, decay=0.0)
+    top_model.compile(loss='categorical_crossentropy', optimizer = rmsprop, metrics=['accuracy'])
     return top_model
+
+
+def uncompiled_top_model(baseModel, numDenseNeurons, dropout_rate):
+    top_model = Sequential()
+    top_model.add(Flatten(input_shape = baseModel.output_shape[1:]))
+    top_model.add(Dense(numDenseNeurons, activation='relu'))
+    top_model.add(Dropout(dropout_rate))
+    top_model.add(Dense(12, activation='softmax'))
+    return top_model
+
+
+def aggregated_model(plantsImageSize,vggLayerstoKeep,nLayersToFreeze,learnRate,numDenseNeurons,dropout_rate,optim):
+    ''' Returns a compiled deep convolutional neural network. It consists of layers of the VGG19 network,
+        trained on ImageNet, with a small densely connected "top network" added to it. The user specifies the 
+        number of VGG19 layers to keep, the number of VGG19 layers to freeze, number of neurons for the densely connected
+        top network, the choice between RMSprop or SGD optimizer, and learning rate if the RMSprop optimizer is chosen'''
+    
+    vgg = VGG19(include_top=False, weights='imagenet', input_shape = (plantsImageSize,plantsImageSize,3))
+
+    # Copy the VGG model by brute force
+    model = Sequential()
+    counter = 0
+    for layer in vgg.layers:
+        if counter < vggLayerstoKeep:
+            model.add(layer)
+            counter = counter + 1
+
+    # Set the weights just to be safe
+    model.set_weights(vgg.get_weights())
+
+    # Freeze certain number of VGG19 layers
+    for layer in model.layers[0:nLayersToFreeze]:
+        layer.trainable = False
+
+    # Add a pooling layer if necessary
+    if (len(model.layers) not in [22, 21, 16, 17, 11, 12, 6, 7, 3, 4]):
+        model.add(MaxPooling2D(pool_size=(2,2)))
+        
+    # Explicitly add layers of a topmodel to the copied VGG layers
+    shapeForFlattenLayer = model.output_shape[1:]
+    model.add(Flatten(input_shape = shapeForFlattenLayer))
+    model.add(Dense(numDenseNeurons, activation='relu'))
+    model.add(Dropout(dropout_rate))
+    model.add(Dense(12, activation='softmax'))   # 12 is for the number of plant classes
+
+    # Compile the model with one of two possible optimizers
+    if optim == 0:
+        rmsprop = RMSprop(lr=learnRate, rho=0.9, epsilon=1e-08, decay=0.0)
+        model.compile(loss='categorical_crossentropy', optimizer = rmsprop, metrics=['accuracy'])
+    else:
+        model.compile(loss='categorical_crossentropy', 
+                              optimizer = optimizers.SGD(lr=1e-4, momentum=0.9), 
+                              metrics=['accuracy'])
+    return model
+
+
+# The number of VGG19 layers to freeze depends on the total number of layers in the model.
+# This function freezes all layers up to the last block of convolutional layers, which
+# are not frozen, and thus are allowed to be trained.
+
+def num_transfer_layers_to_freeze(num_layers_to_keep):
+    if num_layers_to_keep == -1 or num_layers_to_keep == 22:
+        numLayersToFreeze = 17
+    elif (num_layers_to_keep <= 17 and num_layers_to_keep > 12):
+        numLayersToFreeze = 12
+    elif (num_layers_to_keep <= 12 and num_layers_to_keep > 7):
+        numLayersToFreeze = 7
+    elif (num_layers_to_keep <= 7 and num_layers_to_keep > 4):
+        numLayersToFreeze = 4
+    elif num_layers_to_keep == 4:
+        numLayersToFreeze = 1
+    return numLayersToFreeze
