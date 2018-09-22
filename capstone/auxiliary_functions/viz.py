@@ -61,3 +61,23 @@ def plot_model_acc_loss(topModel_history):
     plt.show()
     return
 
+
+def plot_saved_model_acc_loss(best_finalModelHistory):
+    # Visualize accuracy
+    plt.plot(best_finalModelHistory['acc'])
+    plt.plot(best_finalModelHistory['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+
+    # Visualize loss
+    plt.plot(best_finalModelHistory['loss'])
+    plt.plot(best_finalModelHistory['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    return
