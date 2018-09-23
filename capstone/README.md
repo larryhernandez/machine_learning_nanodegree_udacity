@@ -1,7 +1,9 @@
 # Plant Seedlings Classifier (Kaggle Competition)
 
 ## Software and Libraries
+This project makes use of a Deep Learning Base Amazon Machine Image (AMI)[https://aws.amazon.com/marketplace/pp/B077GCZ4GR?qid=1537672182632&sr=0-2&ref_=srh_res_product_title] hosted by Amazon Web Services (AWS). The AMI comes pre-loaded with common tools for deep learning, including Keras, the conda environment, and several popular python libraries. This project was completed using the pre-installed environment called tensorflow_p36, which comes equipped with python 3.6 and tensorflow.
 
+The package requirements for the environment are listed in the (requirements file)[https://github.com/larryhernandez/machine_learning_nanodegree_udacity/blob/master/capstone/requirements/requirements.txt]. In case of any problems, a comprehensive list of all packages (including versions) that were installed on the AMI are listed in the file called (list_of_all_packages)[https://github.com/larryhernandez/machine_learning_nanodegree_udacity/blob/master/capstone/requirements/list_of_all_packages.txt].
 
 
 ## Data Source
