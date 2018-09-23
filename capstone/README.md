@@ -2,29 +2,31 @@
 
 ## Software and Libraries
 
+
+
 ## Data Source
 The image data for this project can be found [here](https://www.kaggle.com/c/plant-seedlings-classification/data) in a file called train.zip. This file is saved locally into a directory called "plantImages/fullDataSet/" and manually unzipped through the commandline to yield the following 12 folders:
 
-    "plantImages/fullDataSet/Black-grass/"
+    "plantImages/fullDataSet/train/Black-grass/"
 
-    "plantImages/fullDataSet/Charlock/"
+    "plantImages/fullDataSet/train/Charlock/"
 
-    "plantImages/fullDataSet/Cleavers/"
+    "plantImages/fullDataSet/train/Cleavers/"
 
-    "plantImages/fullDataSet/Common Chickweed/"
+    "plantImages/fullDataSet/train/Common Chickweed/"
 
-    "plantImages/fullDataSet/Common wheat/"
+    "plantImages/fullDataSet/train/Common wheat/"
 
-    "plantImages/fullDataSet/Fat Hen/"
+    "plantImages/fullDataSet/train/Fat Hen/"
 
-    "plantImages/fullDataSet/Loose Silky-bent/"
+    "plantImages/fullDataSet/train/Loose Silky-bent/"
 
-    "plantImages/fullDataSet/Maize/"
+    "plantImages/fullDataSet/train/Maize/"
 
-    "plantImages/fullDataSet/Scentless Mayweed/"
+    "plantImages/fullDataSet/train/Scentless Mayweed/"
 
-    "plantImages/fullDataSet/Shepherds Purse/"
+    "plantImages/fullDataSet/train/Shepherds Purse/"
 
-    "plantImages/fullDataSet/Small-flowered Cranesbill/"
+    "plantImages/fullDataSet/train/Small-flowered Cranesbill/"
 
-    "plantImages/fullDataSet/Sugar beet/"
+    "plantImages/fullDataSet/train/Sugar beet/"
